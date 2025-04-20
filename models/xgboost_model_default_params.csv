@@ -1,0 +1,9 @@
+Parameter,Value
+max_depth,6
+gamma,0
+reg_lambda,1
+learning_rate,0.3
+min_child_weight,1
+subsample,1
+colsample_bytree,1
+n_estimators,100

@@ -1,0 +1,11 @@
+# Virtual environment
+venv/
+.env
+.venv/
+
+# Streamlit cache & logs
+.streamlit/
+__pycache__/
+logs/
+
+
