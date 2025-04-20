@@ -133,7 +133,8 @@ if st.sidebar.button("Evaluasi Model Dengan Data Test"):
         results_df, rmse, mape = predict_data_test(model)
 
         if results_df is not None:
-            # Menampilkan RMSE
+            # Menampilkan MAPE dan RMSE
+            st.write(f"Evaluasi Model - RMSE: {rmse:.4f}")
             st.write(f"Evaluasi Model - MAPE: {mape:.4f}")
 
             # Pastikan kolom tanggal dalam format datetime
@@ -153,52 +154,49 @@ if st.sidebar.button("Evaluasi Model Dengan Data Test"):
             st.write("Data Prediksi dan Aktual dari Data Test:")
             st.dataframe(results_df)
 
-            # Prediksi 5 hari ke depan menggunakan data harga yang ada
-            st.write("Prediksi 5 Hari Ke Depan:")
+            num_days = 30  # jumlah hari prediksi ke depan
+            st.write(f"Prediksi {num_days} Hari Ke Depan:")
 
-            # Ambil data terakhir (misalnya harga terakhir yang dipakai untuk prediksi)
+            # Ambil data terakhir dari hasil prediksi sebelumnya
             last_known_data = results_df.iloc[-1]
             last_date = last_known_data["Tanggal"]
-            last_open_price = last_known_data["Harga Prediksi"]  # Gunakan harga prediksi terakhir
-            last_high_price = last_known_data["Harga Prediksi"]  # Misalnya menggunakan harga prediksi sebagai harga tertinggi
-            last_low_price = last_known_data["Harga Prediksi"]   # Misalnya menggunakan harga prediksi sebagai harga terendah
-            last_close_price = last_known_data["Harga Aktual"]   # Gunakan harga aktual sebagai harga penutupan
+            last_open_price = last_known_data["Harga Prediksi"]
+            last_high_price = last_known_data["Harga Prediksi"]
+            last_low_price = last_known_data["Harga Prediksi"]
+            last_close_price = last_known_data["Harga Aktual"]
 
-            # Lakukan prediksi untuk 5 hari ke depan dengan input manual
+            # Prediksi ke depan
             future_predictions = []
-            for i in range(5):
-                # Gunakan model yang sudah dilatih untuk memprediksi harga pada hari berikutnya
+            for i in range(num_days):
                 future_prediction = predict(model, last_open_price, last_high_price, last_low_price, last_close_price)
                 future_predictions.append(future_prediction)
 
-                # Update harga untuk prediksi berikutnya
+                # Update nilai untuk prediksi selanjutnya
                 last_open_price = future_prediction
-                last_high_price = future_prediction  # Misalnya, untuk kesederhanaan, kita asumsikan harga tertinggi dan terendah sama
+                last_high_price = future_prediction
                 last_low_price = future_prediction
                 last_close_price = future_prediction
 
-            # Tanggal prediksi 5 hari ke depan
-            prediction_dates = pd.date_range(start=last_date + timedelta(days=1), periods=5, freq='D')
+            # Tanggal prediksi
+            prediction_dates = pd.date_range(start=last_date + timedelta(days=1), periods=num_days, freq='D')
 
-            # Membuat DataFrame untuk visualisasi prediksi 5 hari
+            # DataFrame hasil prediksi
             future_data = pd.DataFrame({
                 "Tanggal": prediction_dates,
                 "Harga Prediksi": future_predictions
             })
 
-            # Visualisasi hasil prediksi 5 hari ke depan
+            # Visualisasi hasil prediksi ke depan
             fig, ax = plt.subplots(figsize=(12, 6))
             ax.plot(future_data["Tanggal"], future_data["Harga Prediksi"], label="Harga Prediksi", marker='x', color="green")
             ax.set_xlabel("Tanggal")
             ax.set_ylabel("Harga")
-            ax.set_title("Prediksi Harga 5 Hari Ke Depan")
+            ax.set_title(f"Prediksi Harga {num_days} Hari Ke Depan")
             ax.legend()
-
-            # Tampilkan grafik
             st.pyplot(fig)
 
-            # Tampilkan data prediksi 5 hari ke depan
-            st.write("Data Prediksi 5 Hari Ke Depan:")
+            # Tampilkan data tabel prediksi ke depan
+            st.write(f"Data Prediksi {num_days} Hari Ke Depan:")
             st.dataframe(future_data)
 
     except Exception as e:
