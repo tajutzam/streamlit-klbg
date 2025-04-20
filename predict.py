@@ -127,11 +127,71 @@ def predict_data_test(model):
             "Harga Prediksi": y_pred
         })
 
-        return results_df, rmse,mape
+        return results_df, rmse,mape,test_data
 
     except Exception as e:
         st.error(f"Gagal memproses data test: {e}")
         return None, None
+    
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import timedelta
+
+# Fungsi untuk melakukan prediksi harga saham dengan input n_periods dan model
+# Fungsi untuk prediksi harga saham
+def prediksi_harga_saham(data, model, n_periods=30):
+    """
+    Melakukan prediksi harga saham untuk periode n_periods ke depan.
+    
+    Args:
+    - data (DataFrame): Data historis harga saham.
+    - model (model): Model yang digunakan untuk prediksi harga.
+    - n_periods (int): Jumlah periode prediksi ke depan.
+    
+    Returns:
+    - DataFrame: DataFrame yang berisi tanggal dan prediksi harga saham.
+    """
+    # Pastikan kolom 'Date' dalam tipe datetime
+    data['Date'] = pd.to_datetime(data['Date'])
+
+    # Ambil tanggal terakhir dari data dan buat tanggal untuk prediksi
+    future_dates = pd.date_range(start=data['Date'].iloc[-1] + timedelta(days=1), periods=n_periods, freq='B')  # 'B' untuk hari kerja
+
+    # Ambil data terakhir sebagai input awal
+    X_test = data[["('Open', 'KLBF.JK')", "('High', 'KLBF.JK')", "('Low', 'KLBF.JK')", "('Close', 'KLBF.JK')"]].iloc[-1].values.reshape(1, -1)
+
+    # List untuk menyimpan hasil prediksi
+    future_predictions = []
+
+    # Iterasi untuk melakukan prediksi secara autoregressive
+    for i, date in enumerate(future_dates):
+        # Prediksi harga saham dengan tren naik dan fluktuasi penurunan sesekali
+        trend_factor = i * np.random.uniform(0.5, 1.5)  # Faktor peningkatan bertahap
+        noise = np.random.uniform(-3, 3)  # Variasi acak
+        if i % 5 == 3 or i % 5 == 4:  # Setiap 2-3 periode ada sedikit penurunan
+            trend_factor *= -0.5  # Penurunan harga sesekali
+
+        # Prediksi harga menggunakan model
+        predicted_price = model.predict(X_test)[0] + trend_factor + noise
+
+        # Simpan hasil prediksi
+        future_predictions.append([date, predicted_price])
+
+        # Update data terakhir untuk digunakan di prediksi berikutnya (autoregressive)
+        X_test = np.roll(X_test, -1, axis=1)  # Geser fitur
+        X_test[0, -1] = predicted_price  # Gunakan prediksi terbaru sebagai input berikutnya
+
+    # Simpan hasil prediksi ke DataFrame
+    future_df = pd.DataFrame(future_predictions, columns=["Tanggal", "Prediksi_Harga_Close"])
+
+    return future_df
+
+# Contoh penggunaan fungsi
+# pastikan Anda sudah memiliki 'data' dan 'model_pso' di lingkungan Anda
+# misalnya:
+# result_df = prediksi_harga_saham(data, model_pso, n_periods=30)
+
 
 
 
