@@ -13,7 +13,7 @@ from datetime import datetime
 # Path model dari CSV
 MODELS_PATH = {
     "Model XGBoost Default": "models/xgboost_model_default_params.csv",
-    "Model XGBoost GridSearchCV": "models/xgboost_model_gridsearchcv_params.csv", 
+    "Model XGBoost GridSearchCV": "models/xgboost_gridsearchcv_params.csv", 
     "Model XGBoost PSO": "models/xgboost_pso_params.csv"
 }
 
@@ -117,6 +117,9 @@ def predict_data_test(model):
         mse = mean_squared_error(y_test, y_pred)
         rmse = np.sqrt(mse)
 
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+
+
         # Buat DataFrame untuk hasil prediksi dan aktual
         results_df = pd.DataFrame({
             "Tanggal": test_data["Date"] if "Date" in test_data.columns else pd.date_range(end=datetime.today(), periods=len(y_test)),
@@ -124,7 +127,7 @@ def predict_data_test(model):
             "Harga Prediksi": y_pred
         })
 
-        return results_df, rmse
+        return results_df, rmse,mape
 
     except Exception as e:
         st.error(f"Gagal memproses data test: {e}")

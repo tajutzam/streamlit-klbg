@@ -18,6 +18,9 @@ selected_model_name = st.selectbox("Pilih Model Prediksi", MODELS)
 # Load model berdasarkan pilihan
 model = load_model(selected_model_name)
 
+st.success(f"Model {selected_model_name} berhasil dimuat!")
+
+
 # Bagian input
 st.sidebar.header("Input Data Prediksi")
 input_method = st.sidebar.radio("Pilih Metode Input", ["Manual", "Upload CSV"])
@@ -49,7 +52,7 @@ elif input_method == "Upload CSV":
             df = pd.read_csv(uploaded_file)
 
             # Cek apakah kolom yang dibutuhkan ada di dalam dataset
-            required_columns = ["Date", "Open", "High", "Low", "Close"]
+            required_columns = ["xgboost_gridsearchcv_params.csvDate", "Open", "High", "Low", "Close"]
             missing_cols = [col for col in required_columns if col not in df.columns]
             if missing_cols:
                 st.error(f"File CSV harus memiliki kolom: {', '.join(missing_cols)}")
@@ -127,11 +130,11 @@ if st.sidebar.button("Generate Predictions"):
 if st.sidebar.button("Evaluasi Model Dengan Data Test"):
     try:
         # Evaluasi dengan data test
-        results_df, rmse = predict_data_test(model)
+        results_df, rmse, mape = predict_data_test(model)
 
         if results_df is not None:
             # Menampilkan RMSE
-            st.write(f"Evaluasi Model - RMSE: {rmse:.4f}")
+            st.write(f"Evaluasi Model - MAPE: {mape:.4f}")
 
             # Pastikan kolom tanggal dalam format datetime
             results_df["Tanggal"] = pd.to_datetime(results_df["Tanggal"])
